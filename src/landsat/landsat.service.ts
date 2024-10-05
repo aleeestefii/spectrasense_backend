@@ -14,7 +14,6 @@ export class LandsatService {
   private readonly API_URL = 'https://m2m.cr.usgs.gov/api/api/json/stable';
   private readonly tleUrl = 'https://celestrak.com/NORAD/elements/resource.txt';
   private readonly logger = new Logger(LandsatService.name);
-  private readonly authToken: string = envs.apiLandsat;
   private currentPosition: { latitude: number; longitude: number } | null =
     null;
 
@@ -71,6 +70,37 @@ export class LandsatService {
       }
     }
     return null;
+  }
+
+  getLandsatScene(
+    latitude: number,
+    longitude: number,
+    startDate?: string,
+    endDate?: string,
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      // Definir la ruta del script de Python
+      const scriptPath = path.join(__dirname, 'codes/datos.py');
+
+      // Construir el comando para ejecutar el script con los argumentos
+      let command = `python ${scriptPath} ${latitude} ${longitude}`;
+      if (startDate) command += ` ${startDate}`;
+      if (endDate) command += ` ${endDate}`;
+
+      // Ejecutar el script de Python
+      exec(command, (error, stdout, stderr) => {
+        if (error) {
+          reject({ error: stderr || 'Failed to execute Python script.' });
+        } else {
+          try {
+            const result = JSON.parse(stdout);
+            resolve(result);
+          } catch (parseError) {
+            reject({ error: 'Failed to parse Python script output.' });
+          }
+        }
+      });
+    });
   }
 
   async getLandsatImage(latitude: number, longitude: number): Promise<any> {
@@ -153,7 +183,7 @@ export class LandsatService {
     });
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_12_HOURS)
   async updateSatellitePosition() {
     try {
       this.currentPosition = await this.getSatellitePosition();

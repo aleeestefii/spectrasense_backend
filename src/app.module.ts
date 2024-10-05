@@ -4,9 +4,27 @@ import { AppService } from './app.service';
 import { LandsatModule } from './landsat/landsat.module';
 import { PositionModule } from './position/position.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { UsersModule } from './users/users.module';
+import { envs } from './config/envs';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports: [LandsatModule, PositionModule, ScheduleModule.forRoot()],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: envs.db_host,
+      port: Number(envs.db_port),
+      database: envs.db_name,
+      username: envs.db_user,
+      password: envs.db_password,
+      autoLoadEntities: true,
+      synchronize: true,
+    }),
+    LandsatModule,
+    PositionModule,
+    ScheduleModule.forRoot(),
+    UsersModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
