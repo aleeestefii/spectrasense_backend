@@ -6,7 +6,7 @@ import os
 
 current_directory = os.path.dirname(os.path.abspath(__file__))
 SERVICE_ACCOUNT_FILE = os.path.join(
-    current_directory, 'ee-fbonillamontalvo-03eef015f7ca.json')
+    current_directory,)
 
 credentials = ee.ServiceAccountCredentials(None, SERVICE_ACCOUNT_FILE)
 
