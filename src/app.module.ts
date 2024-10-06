@@ -7,6 +7,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { UsersModule } from './users/users.module';
 import { envs } from './config/envs';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     PositionModule,
     ScheduleModule.forRoot(),
     UsersModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

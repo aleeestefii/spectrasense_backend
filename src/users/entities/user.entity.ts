@@ -11,9 +11,9 @@ export class User {
      @Column()
      email: string;
 
-     @Column()
-     latitude: string;
+     @Column('float')
+     latitude: number;
 
-     @Column()
-     longitude: string;
+     @Column('float')
+     longitude: number;
 }

@@ -8,6 +8,8 @@ import * as path from 'path';
 import { exec } from 'child_process';
 import Jimp from 'jimp';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { UsersService } from 'src/users/users.service';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class LandsatService {
@@ -16,6 +18,10 @@ export class LandsatService {
   private readonly logger = new Logger(LandsatService.name);
   private currentPosition: { latitude: number; longitude: number } | null =
     null;
+  constructor(
+    private readonly usersService: UsersService,
+    private mailService: MailService,
+  ) {}
 
   async getSatellitePosition(): Promise<{
     latitude: number;
@@ -187,9 +193,31 @@ export class LandsatService {
   async updateSatellitePosition() {
     try {
       this.currentPosition = await this.getSatellitePosition();
+
       this.logger.log(
         `Updated satellite position: ${JSON.stringify(this.currentPosition)}`,
       );
+
+      if (this.currentPosition) {
+        const { latitude, longitude } = this.currentPosition;
+        const [users, count] = await this.usersService.findAll(
+          latitude - 3,
+          latitude + 3,
+          longitude - 3,
+          longitude + 3,
+        );
+
+        if (count > 0) {
+          for (const user of users) {
+            await this.mailService.sendSateliteComming(
+              user.name,
+              user.email,
+              latitude,
+              longitude,
+            );
+          }
+        }
+      }
     } catch (error) {
       this.logger.error(
         `Failed to update satellite position: ${error.message}`,
